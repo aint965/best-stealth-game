@@ -156,3 +156,32 @@ to them, so it was upgraded in place (same entry, same session lineage):
   but no full playthrough has cleared gallery 2 or 3 with them live.
 - The lure's browser click wiring was verified through the logic check,
   not by a real mouse click in the play-test.
+
+## Fix round — server rejection, `run_completes` exit 1 (after submission)
+
+The upgraded entry was submitted (submission 01a20140) and the server
+REJECTED it on `run_completes`: the program exited with code 1 when the
+grader ran it as `node /bot/main.ts`. Every other check passed
+(transcripts, authorship 93.8%).
+
+- **Diagnosis (reproduced before fixing).** `main.ts` resolved the repo
+  with `const repo = process.cwd()`. From inside the repo that works,
+  but the grader runs from another directory, so the pre-flight failed
+  with `main.ts: game/index.html is missing` and exit 1. Reproduced
+  exactly: `cd /tmp && MAKEFUN_OUTPUT_DIR=/tmp/stealth-out2 node
+  <repo>/main.ts` → EXIT 1; from inside the repo → EXIT 0.
+- **Fix.** `main.ts` only (6 insertions, 1 deletion): the repo is now
+  resolved from the script's own location, the same pattern as the kit
+  starter — `import { fileURLToPath } from 'node:url'` +
+  `const repo = fileURLToPath(new URL('.', import.meta.url))`. No other
+  logic changed; `vendor/makefun-game.ts`, `game/` and `screenshots/`
+  untouched.
+- **Verification (after the fix).** From another directory (`/tmp`) →
+  EXIT 0, hand-in complete (14 game entries, 67,499 bytes, 4 screenshots,
+  dossier.json 655,584 bytes). From inside the repo → EXIT 0. The fresh
+  `dossier.json` (sha256 c8ffe957…) is byte-identical to the previous
+  verified runs (`checks-v1-a/dossier.json`,
+  `checks-v1-b/dossier.json`) — the game itself did not change.
+  `checks-v1/shoot-and-test.mjs` **19/19**, `checks-v1/lure-check.mjs`
+  **5/5**, `checks-v1/systems-check.mjs` **17/17** (all re-run after the
+  fix, all green).

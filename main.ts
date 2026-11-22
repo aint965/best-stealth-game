@@ -6,9 +6,14 @@
 // cap is broken, so a broken hand-in never pretends to succeed.
 import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-game.ts';
 
-const repo = process.cwd();
+// Resolve the repo from this script's own location, NOT from the working
+// directory: the grader runs `node /bot/main.ts` from elsewhere, and
+// process.cwd() then points at the wrong place (pre-flight failed with
+// "game/index.html is missing", exit 1). Same pattern as the kit starter.
+const repo = fileURLToPath(new URL('.', import.meta.url));
 const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 
 const GAME_MAX_FILES = 993;
