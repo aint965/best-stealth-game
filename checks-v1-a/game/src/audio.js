@@ -48,8 +48,9 @@ export class SoundBank {
     }
   }
 
-  footstep(sneaking) {
-    this.tone(sneaking ? 70 : 95, 0, 0.07, 'triangle', sneaking ? 0.03 : 0.06, 55);
+  footstep(sneaking, sprinting) {
+    if (sprinting) this.tone(130, 0, 0.08, 'triangle', 0.09, 70);
+    else this.tone(sneaking ? 70 : 95, 0, 0.07, 'triangle', sneaking ? 0.03 : 0.06, 55);
   }
 
   alertSting() {

@@ -17,6 +17,11 @@ const PRESETS = {
     ],
     taken: 0,
     exitOpen: false,
+    timer: 0,
+    score: 0,
+    spotted: 0,
+    strikes: 0,
+    labels: [{ tile: [22, 1], text: 'LOCKED — take all 3 charts first', side: 'below' }],
   },
   patrol: {
     level: 1,
@@ -26,8 +31,14 @@ const PRESETS = {
       { tile: [12, 11], angle: Math.PI, suspicion: 0 },
       { tile: [13, 16], angle: -Math.PI / 2, suspicion: 0 },
     ],
+    cameras: [{ angle: 2.9, suspicion: 30 }],
     taken: 1,
     exitOpen: false,
+    timer: 64,
+    score: 100,
+    spotted: 0,
+    strikes: 0,
+    labels: [{ tile: [20, 7], text: 'CAMERA — sweeps the hall, time your move', side: 'above' }],
   },
   alert: {
     level: 0,
@@ -38,6 +49,14 @@ const PRESETS = {
     ],
     taken: 0,
     exitOpen: false,
+    timer: 37,
+    score: 0,
+    spotted: 1,
+    strikes: 0,
+    labels: [
+      { tile: [9, 5], text: 'HEARD SOMETHING — off to look', side: 'above' },
+      { tile: [12, 5], text: 'SPOTTED! Suspicion rising', side: 'below' },
+    ],
   },
   exit: {
     level: 2,
@@ -48,8 +67,20 @@ const PRESETS = {
       { tile: [12, 8], angle: Math.PI / 2, suspicion: 0 },
       { tile: [10, 15], angle: 0, suspicion: 0 },
     ],
+    cameras: [
+      { angle: -0.8, suspicion: 0 },
+      { angle: 3.0, suspicion: 0 },
+    ],
     taken: 3,
     exitOpen: true,
+    timer: 131,
+    score: 300,
+    spotted: 0,
+    strikes: 0,
+    labels: [
+      { tile: [12, 8], text: 'TRIPWIRE — sneak through slowly', side: 'above' },
+      { tile: [22, 1], text: 'EXIT OPEN — slip out unseen', side: 'below' },
+    ],
   },
 };
 
@@ -77,6 +108,17 @@ export function applyShot(game, name, loadLevel) {
     chart.taken = i < preset.taken;
   });
   world.exitOpen = preset.exitOpen;
+  (preset.cameras || []).forEach((c, i) => {
+    const camera = world.cameras[i];
+    if (!camera) return;
+    camera.angle = c.angle;
+    camera.suspicion = c.suspicion;
+  });
+  game.timer = preset.timer || 0;
+  game.score = preset.score || 0;
+  game.spotted = preset.spotted || 0;
+  game.strikes = preset.strikes || 0;
+  game.labels = preset.labels || null;
   game.screen = 'play';
   game.frozen = true;
   return true;

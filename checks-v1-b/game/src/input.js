@@ -12,6 +12,7 @@ export function makeInput(canvas, onClick) {
     left: false,
     right: false,
     sneak: false,
+    sprint: false,
     consume(name) {
       if (pressed.has(name)) {
         pressed.delete(name);
@@ -28,6 +29,7 @@ export function makeInput(canvas, onClick) {
       input.left = held.has('left');
       input.right = held.has('right');
       input.sneak = held.has('sneak');
+      input.sprint = held.has('sprint');
     },
   };
 
@@ -42,6 +44,7 @@ export function makeInput(canvas, onClick) {
     ArrowRight: 'right',
     ShiftLeft: 'sneak',
     ShiftRight: 'sneak',
+    Space: 'sprint',
   };
   const KEY_PRESSED = {
     KeyE: 'interact',

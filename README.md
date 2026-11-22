@@ -11,14 +11,25 @@ three star charts from each gallery and slip out through the moon door —
 unseen by the night sentries. Sentries patrol with lantern-lit vision
 cones; step into a cone and suspicion rises, the cone turning amber, then
 red. Break line of sight and the alarm cools back to a search, then to
-calm — detection is always recoverable. Crates and walls block sight,
-shadow alcoves shrink how far a sentry can spot you, sneaking moves slowly
-and quietly, and a thrown lure draws a sentry away to investigate.
+calm — detection is always recoverable. Archive shelves and walls block
+sight, shadow alcoves shrink how far a sentry can spot you, lamplight
+stretches it the other way, sneaking moves slowly and quietly, sprinting
+is fast but loud enough to draw sentries to the noise, and a thrown lure
+draws a sentry away to investigate.
+
+The Map Gallery and the Vault add sweeping security cameras whose violet
+cones spot you just like a sentry — and call every guard to your position.
+The Vault is wired with tripwires: sneak under them slowly, or trip the
+alarm. Score 100 per chart, a time bonus at the finish, and GHOST +500
+for never being spotted; three strikes and the heist fails.
 
 Three galleries, rising difficulty: the Reading Room (2 sentries), the Map
-Gallery (3 sentries, tighter patrols), and the Vault of Charts (4 sentries,
-sparse cover). Every gallery has a title screen, HUD (charts, alarm meter,
-timer, level), pause, caught screen with retry, and a win screen.
+Gallery (3 sentries, tighter patrols, a camera), and the Vault of Charts
+(4 sentries, sparse cover, two cameras, two tripwires). Every gallery has
+a title screen, a HUD (charts, detection status, alarm meter, score,
+timer) with a detection panel (visibility, noise, strikes, ghost) and a
+legend strip explaining every icon, pause, caught screen with retry, and
+a win screen with the full score breakdown.
 
 ## How to play
 
@@ -28,6 +39,7 @@ drawn in Canvas 2D and all sounds are synthesized with WebAudio.
 
 - **WASD / arrows** — move
 - **Shift** — sneak (slower, quieter, harder to spot)
+- **Space** — sprint (faster, but loud: nearby sentries come to listen)
 - **E** — take a star chart when standing close to one
 - **Click** — throw a lure that draws a nearby sentry to that spot
 - **P** — pause, **M** — mute, **R** — retry after being caught, **Enter** — confirm

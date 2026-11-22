@@ -10,19 +10,19 @@
     },
     "screenshot-1-cover.png": {
       "pass": true,
-      "detail": "800x608, 33407 bytes"
+      "detail": "800x608, 101387 bytes"
     },
     "screenshot-2-patrol.png": {
       "pass": true,
-      "detail": "800x608, 35622 bytes"
+      "detail": "800x608, 104432 bytes"
     },
     "screenshot-3-alert.png": {
       "pass": true,
-      "detail": "800x608, 32906 bytes"
+      "detail": "800x608, 104313 bytes"
     },
     "screenshot-4-exit.png": {
       "pass": true,
-      "detail": "800x608, 39796 bytes"
+      "detail": "800x608, 128230 bytes"
     },
     "play-title-screen": {
       "pass": true,
@@ -34,11 +34,11 @@
     },
     "play-movement": {
       "pass": true,
-      "detail": "x 48 -> 193"
+      "detail": "x 48 -> 198"
     },
     "play-vision-reacts": {
       "pass": true,
-      "detail": "suspicion 1.2 -> 100.0"
+      "detail": "suspicion 0.0 -> 100.0"
     },
     "play-caught": {
       "pass": true,
@@ -62,11 +62,11 @@
     },
     "main-ts-run-a": {
       "pass": true,
-      "detail": "hand-in complete: 12 game entries (39557 bytes), 4 screenshots (1-cover.png, 2-patrol.png, 3-alert.png, 4-exit.png), dossier.json 231225 bytes"
+      "detail": "hand-in complete: 14 game entries (67499 bytes), 4 screenshots (1-cover.png, 2-patrol.png, 3-alert.png, 4-exit.png), dossier.json 655584 bytes"
     },
     "main-ts-run-b": {
       "pass": true,
-      "detail": "hand-in complete: 12 game entries (39557 bytes), 4 screenshots (1-cover.png, 2-patrol.png, 3-alert.png, 4-exit.png), dossier.json 231225 bytes"
+      "detail": "hand-in complete: 14 game entries (67499 bytes), 4 screenshots (1-cover.png, 2-patrol.png, 3-alert.png, 4-exit.png), dossier.json 655584 bytes"
     },
     "main-ts-deterministic": {
       "pass": true,
@@ -80,25 +80,25 @@
   "screenshots": [
     {
       "name": "1-cover.png",
-      "bytes": 33407,
+      "bytes": 101387,
       "width": 800,
       "height": 608
     },
     {
       "name": "2-patrol.png",
-      "bytes": 35622,
+      "bytes": 104432,
       "width": 800,
       "height": 608
     },
     {
       "name": "3-alert.png",
-      "bytes": 32906,
+      "bytes": 104313,
       "width": 800,
       "height": 608
     },
     {
       "name": "4-exit.png",
-      "bytes": 39796,
+      "bytes": 128230,
       "width": 800,
       "height": 608
     }

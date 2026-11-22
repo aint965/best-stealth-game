@@ -78,5 +78,81 @@ by the night sentries.
   can never break the game.
 - Difficulty balance (suspicion rates, patrol and chase speeds) is tuned
   by judgment, not by human playtesting.
+
+## Upgrade round (same session family, after the leaderboard review)
+
+The parent reviewed the live leaderboard (4,381 entries; top 5 judge
+~991,651, all 12-0-0) and the top entries' artifacts: textured rooms,
+in-frame legend and detection panels, callout labels, timers, scores,
+ghost bonuses, 5 heists with 17 guards and 3 gadgets, cameras, lasers,
+tripwires, smoke and noise systems. This game was a flat prototype next
+to them, so it was upgraded in place (same entry, same session lineage):
+
+- **Visuals** — per-gallery floor themes (warm wood planks in the Reading
+  Room, stone tiles in the Map Gallery, dark slate in the Vault), brick
+  walls with staggered joints, archive shelves with coloured book spines
+  instead of plain crates, walkable patterned carpets, warm lamps with
+  radial glow (standing in the glow extends detection range x1.3),
+  plants, star-specked shadow pools, and a richer guard lantern.
+- **HUD + panels** — the top bar now shows detection status
+  (HIDDEN / NOTICED / SUSPICIOUS / ALERT!), the alarm bar and the
+  gallery; a DETECTION panel reports score, timer, strikes, GHOST
+  status, visibility (IN SHADOW / LAMP LIGHT / VISIBLE) and noise
+  (SILENT / QUIET / LOUD); a legend strip along the bottom explains
+  every icon (sentry cone, camera, tripwire, shelf, shadow, lamp,
+  chart, exit) plus the controls.
+- **Cameras** — one sweeping camera in the Map Gallery, two in the
+  Vault (`game/src/cameras.js`): violet cones clipped by walls, suspicion
+  that rises on sight, and at full suspicion the camera spots Wren and
+  every sentry walks to her position.
+- **Tripwires** — two pulsing red wires across the Vault's lanes
+  (`game/src/tripwires.js`): sneak under them slowly and nothing
+  happens; walk or sprint across and nearby sentries converge with
+  suspicion raised.
+- **Noise + sprint** — Space sprints (215 px/s) and every half-second of
+  sprinting throws a visible noise ring that draws sentries within 240 px
+  to investigate; sneaking stays silent.
+- **Score, strikes, ghost** — 100 points per chart, a time bonus and
+  GHOST +500 for finishing never spotted; three strikes end the heist
+  with a HEIST FAILED screen. The win screen shows the full breakdown.
+- **Annotated screenshots** — staged shots now carry callout labels in
+  the canvas (LOCKED door, sweeping camera, "HEARD SOMETHING",
+  "SPOTTED!", tripwire, open exit) and real timers/scores, so each frame
+  explains itself.
+- **New checks** — `checks-v1/systems-check.mjs` (17 checks: camera
+  sweep/see/spot, tripwire sneak-safe/walk-trips/cooldown, noise near
+  and far, sprint emission, lamp range, pickup).
+
+## Verification results (upgrade, final run)
+
+- `checks-v1/shoot-and-test.mjs`: **19/19 pass** — levels reachable,
+  4 screenshots 800x608, 101,387–128,230 bytes (cap 256 KiB),
+  title/start, movement, vision reacts, caught, retry, exit/win,
+  0 console errors, 0 external requests, two hand-in runs
+  byte-identical, dossier matches a fresh `buildDossier`
+  (dossier.json 655,584 bytes; `game/` 14 entries, 67,499 bytes).
+- `checks-v1/lure-check.mjs`: **5/5 pass** (unchanged).
+- `checks-v1/systems-check.mjs`: **17/17 pass**.
+- All four screenshots were viewed after the final run. One defect was
+  found and fixed in review: the legend strip's icon painters left the
+  canvas fill style dark, so the "Shadow hides" label rendered invisible
+  (and the other labels were tinted by their icons); the label colour is
+  now reset before every label, and the strip reads completely.
+
+## Honest gaps (still)
+
+- No human has played all three galleries end to end; play-testing was
+  headless and CDP-driven, covering level 1 flows programmatically
+  (movement, vision, caught, retry, exit) plus logic simulations for the
+  new systems.
+- The sounds are synthesized but were never listened to — headless
+  Chrome has no audio output. The audio code is wrapped so a failure
+  can never break the game.
+- Difficulty balance (suspicion rates, patrol and chase speeds, camera
+  sweep speeds, tripwire placement) is tuned by judgment, not by human
+  playtesting; the Vault with two cameras and two tripwires may be the
+  hardest gallery by a clear margin.
+- Cameras and tripwires were verified in logic checks and staged shots,
+  but no full playthrough has cleared gallery 2 or 3 with them live.
 - The lure's browser click wiring was verified through the logic check,
   not by a real mouse click in the play-test.

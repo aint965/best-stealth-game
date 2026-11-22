@@ -14,6 +14,7 @@ import {
   SUSPICION_RISE_CLOSE,
   SUSPICION_DECAY,
   CHASE_LOSE_TIME,
+  NOISE_RADIUS,
 } from './config.js';
 import { canSee, detectionRange } from './vision.js';
 import { moveCircle } from './level.js';
@@ -121,6 +122,7 @@ export function updateGuard(g, dt, world) {
     if (g.suspicion >= 100 && g.state !== 'chase') {
       g.state = 'chase';
       world.onAlarm?.(g);
+      world.onSpotted?.(g);
     } else if (g.suspicion >= INVESTIGATE_AT && g.state === 'patrol') {
       g.state = 'investigate';
       g.target = { ...g.lastSeen };
@@ -154,4 +156,34 @@ export function lureGuards(guards, x, y, radius) {
   best.isLure = true;
   best.lookTimer = 0;
   return true;
+}
+
+/** A loud noise draws every calm sentry within earshot to the spot. */
+export function hearNoise(guards, x, y, radius = NOISE_RADIUS) {
+  let drawn = false;
+  for (const g of guards) {
+    if (g.state === 'chase') continue;
+    if (Math.hypot(g.x - x, g.y - y) < radius) {
+      g.state = 'investigate';
+      g.target = { x, y };
+      g.isLure = false;
+      g.lookTimer = 0;
+      drawn = true;
+    }
+  }
+  return drawn;
+}
+
+/** A tripwire or a camera spot sends nearby sentries to look, suspicion up. */
+export function convergeGuards(guards, x, y, radius, suspicion) {
+  for (const g of guards) {
+    if (g.state === 'chase') continue;
+    if (Math.hypot(g.x - x, g.y - y) < radius) {
+      g.state = 'investigate';
+      g.target = { x, y };
+      g.isLure = false;
+      g.lookTimer = 0;
+      g.suspicion = Math.max(g.suspicion, suspicion);
+    }
+  }
 }
