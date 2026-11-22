@@ -1,0 +1,106 @@
+{
+  "cases": {
+    "levels-reachable": {
+      "pass": true,
+      "detail": "all objectives and exits reachable, all patrol waypoints on open tiles"
+    },
+    "server-up": {
+      "pass": true,
+      "detail": "game/ on http://127.0.0.1:8091"
+    },
+    "screenshot-1-cover.png": {
+      "pass": true,
+      "detail": "800x608, 25539 bytes"
+    },
+    "screenshot-2-patrol.png": {
+      "pass": true,
+      "detail": "800x608, 27873 bytes"
+    },
+    "screenshot-3-alert.png": {
+      "pass": true,
+      "detail": "800x608, 27250 bytes"
+    },
+    "screenshot-4-exit.png": {
+      "pass": true,
+      "detail": "800x608, 29577 bytes"
+    },
+    "play-title-screen": {
+      "pass": true,
+      "detail": "screen=title"
+    },
+    "play-starts": {
+      "pass": true,
+      "detail": "screen=play"
+    },
+    "play-movement": {
+      "pass": true,
+      "detail": "x 80 -> 228"
+    },
+    "play-vision-reacts": {
+      "pass": true,
+      "detail": "suspicion 0.0 -> 10.3"
+    },
+    "play-caught": {
+      "pass": true,
+      "detail": "screen=caught"
+    },
+    "play-retry": {
+      "pass": true,
+      "detail": "screen=play"
+    },
+    "play-exit-win": {
+      "pass": true,
+      "detail": "screen=level-clear"
+    },
+    "play-no-console-errors": {
+      "pass": true,
+      "detail": "0 errors"
+    },
+    "play-no-external-requests": {
+      "pass": true,
+      "detail": "0 external"
+    },
+    "main-ts-run-a": {
+      "pass": true,
+      "detail": "quiet-vault hand-in: game 12 files (48025 bytes), screenshots 4 (110239 bytes), dossier 197937 bytes -> /home/hatch/workspace/makefun/entries/best-stealth-game-xingchi/checks-v1-a"
+    },
+    "main-ts-run-b": {
+      "pass": true,
+      "detail": "quiet-vault hand-in: game 12 files (48025 bytes), screenshots 4 (110239 bytes), dossier 197937 bytes -> /home/hatch/workspace/makefun/entries/best-stealth-game-xingchi/checks-v1-b"
+    },
+    "main-ts-deterministic": {
+      "pass": true,
+      "detail": "checks-v1-a and checks-v1-b byte-identical"
+    },
+    "dossier-matches": {
+      "pass": true,
+      "detail": "dossier.json equals a fresh buildDossier run"
+    }
+  },
+  "screenshots": [
+    {
+      "name": "1-cover.png",
+      "bytes": 25539,
+      "width": 800,
+      "height": 608
+    },
+    {
+      "name": "2-patrol.png",
+      "bytes": 27873,
+      "width": 800,
+      "height": 608
+    },
+    {
+      "name": "3-alert.png",
+      "bytes": 27250,
+      "width": 800,
+      "height": 608
+    },
+    {
+      "name": "4-exit.png",
+      "bytes": 29577,
+      "width": 800,
+      "height": 608
+    }
+  ]
+}
