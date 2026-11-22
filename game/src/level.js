@@ -1,188 +1,153 @@
-// Quiet Vault: the three levels. Each level is data, not code: wall and
-// crate rectangles, shadow patches, the objectives, the exit, the player
-// start and the guards' patrols. Tiles are 32 px; the border is always
-// wall. A patrol lane is kept clear of walls and crates by construction,
-// so a guard never has to path around an obstacle: it walks its waypoints
-// in straight lines and turns at each one.
-import { COLS, ROWS } from './config.js';
+// Starlight Archive — the three galleries of the observatory archive.
+// Each level is a 25 x 19 tile map. Legend:
+//   '#' stone wall (solid, blocks sight)   'C' archive crate (solid cover)
+//   '.' open floor                          'S' shadow alcove (walkable, hides)
+//   'P' the archivist's start               'E' the moon door (exit)
+//   '1','2','3' star charts to recover
+// Guard patrols are listed separately as tile coordinates; every waypoint
+// sits on open floor and every patrol leg runs straight down an open lane.
+import { TILE } from './config.js';
 
-const LEVELS = [
+const LEVEL_DEFS = [
   {
-    name: 'Seed Hall',
-    subtitle: 'Two wardens, wide lanes, learn the cones',
-    // Interior walls as [x, y, w, h] in tiles.
-    walls: [
-      [6, 4, 4, 1],
-      [15, 4, 4, 1],
-      [6, 14, 4, 1],
-      [15, 14, 4, 1],
-      [2, 8, 2, 1],
-      [21, 8, 2, 1],
+    name: 'Reading Room',
+    grid: [
+      '#########################',
+      '#......C......#.......E.#',
+      '#.............#.........#',
+      '#..1..........#....C....#',
+      '#.......................#',
+      '#.....C..........C......#',
+      '#.......................#',
+      '#..C........C...........#',
+      '#.......................#',
+      '#......S........S.......#',
+      '#.......................#',
+      '#..C......C.......C.....#',
+      '#.......................#',
+      '#....2..........S.......#',
+      '#.......................#',
+      '#..C......C.......C.....#',
+      '#.......................#',
+      '#P..........3...........#',
+      '#########################',
     ],
-    // Crates block movement and sight, like low walls.
-    crates: [
-      [10, 6],
-      [13, 6],
-      [10, 12],
-      [13, 12],
-      [4, 11],
-      [20, 7],
-      [10, 7],
-      [14, 11],
-    ],
-    // Shadow patches: standing in one halves how fast suspicion rises.
-    shadows: [
-      [2, 2, 3, 2],
-      [20, 2, 3, 2],
-      [2, 15, 3, 2],
-      [20, 15, 3, 2],
-      [11, 1, 3, 1],
-    ],
-    objectives: [
-      [12, 2],
-      [22, 9],
-      [3, 16],
-    ],
-    exit: [23, 16],
-    player: [2, 16],
     guards: [
-      { start: [12, 5], waypoints: [[12, 3], [12, 15]], pause: 1.5 },
-      { start: [20, 9], waypoints: [[4, 9], [21, 9]], pause: 1.0 },
+      { start: [8, 5], waypoints: [[8, 5], [16, 5]] },
+      { start: [11, 10], waypoints: [[11, 10], [11, 16]] },
     ],
   },
   {
-    name: 'Cold Rooms',
-    subtitle: 'Three wardens, rooms and a long middle lane',
-    walls: [
-      [5, 3, 1, 6],
-      [5, 11, 1, 6],
-      [12, 2, 1, 5],
-      [12, 12, 1, 5],
-      [19, 3, 1, 6],
-      [19, 11, 1, 6],
-      [8, 9, 3, 1],
-      [14, 9, 3, 1],
+    name: 'Map Gallery',
+    grid: [
+      '#########################',
+      '#....#........#......E..#',
+      '#....#........#.........#',
+      '#.1..#...C....#....C....#',
+      '#....#........#.........#',
+      '#....#..................#',
+      '#....#....C......C......#',
+      '#.......................#',
+      '#..C....#........#...C..#',
+      '#.......#...S....#......#',
+      '#.......#........#......#',
+      '#..2....#........#...3..#',
+      '#.......#........#......#',
+      '#....C..#...C....#..C...#',
+      '#.......#........#......#',
+      '#..S....#........#..S...#',
+      '#.......#........#......#',
+      '#P......#...............#',
+      '#########################',
     ],
-    crates: [
-      [10, 5],
-      [15, 5],
-      [10, 14],
-      [15, 14],
-      [7, 12],
-      [17, 12],
-    ],
-    shadows: [
-      [2, 5, 2, 3],
-      [22, 5, 2, 3],
-      [2, 12, 2, 3],
-      [22, 12, 2, 3],
-      [10, 16, 5, 1],
-    ],
-    objectives: [
-      [6, 2],
-      [18, 6],
-      [9, 15],
-    ],
-    exit: [23, 2],
-    player: [2, 2],
     guards: [
-      { start: [3, 3], waypoints: [[3, 3], [3, 15]], pause: 1.2 },
-      { start: [22, 15], waypoints: [[22, 3], [22, 15]], pause: 1.2 },
-      { start: [3, 17], waypoints: [[3, 17], [21, 17]], pause: 0.8 },
+      { start: [10, 5], waypoints: [[10, 5], [20, 5]] },
+      { start: [12, 8], waypoints: [[12, 8], [12, 14]] },
+      { start: [10, 16], waypoints: [[10, 16], [16, 16]] },
     ],
   },
   {
-    name: 'Deep Vault',
-    subtitle: 'Four wardens, little shadow, one chokepoint',
-    walls: [
-      [4, 2, 6, 1],
-      [15, 2, 6, 1],
-      [4, 16, 6, 1],
-      [15, 16, 6, 1],
-      [8, 6, 2, 6],
-      [15, 6, 2, 6],
-      [11, 9, 3, 1],
+    name: 'The Vault of Charts',
+    grid: [
+      '#########################',
+      '#..........C..........E.#',
+      '#.......................#',
+      '#..1....................#',
+      '#......C........C.......#',
+      '#.......................#',
+      '#....C.............C....#',
+      '#.......................#',
+      '#........S..............#',
+      '#.......................#',
+      '#..C.................C..#',
+      '#.......................#',
+      '#......2........S.......#',
+      '#.......................#',
+      '#....C.............C....#',
+      '#.......................#',
+      '#.........S.............#',
+      '#P............3.........#',
+      '#########################',
     ],
-    crates: [
-      [10, 4],
-      [14, 4],
-      [10, 14],
-      [14, 14],
-    ],
-    shadows: [
-      [2, 8, 2, 2],
-      [21, 8, 2, 2],
-    ],
-    objectives: [
-      [12, 4],
-      [6, 9],
-      [18, 9],
-    ],
-    exit: [12, 17],
-    player: [12, 1],
     guards: [
-      { start: [2, 3], waypoints: [[2, 3], [2, 15]], pause: 1.0 },
-      { start: [22, 15], waypoints: [[22, 3], [22, 15]], pause: 1.0 },
-      { start: [6, 5], waypoints: [[6, 5], [18, 5]], pause: 0.9 },
-      { start: [18, 13], waypoints: [[6, 13], [18, 13]], pause: 0.9 },
+      { start: [5, 5], waypoints: [[5, 5], [19, 5]] },
+      { start: [19, 9], waypoints: [[19, 9], [5, 9]] },
+      { start: [12, 2], waypoints: [[12, 2], [12, 16]] },
+      { start: [4, 15], waypoints: [[4, 15], [20, 15]] },
     ],
   },
 ];
 
-/** A built level: a tile grid plus the markers in pixels. */
-export function buildLevel(index) {
-  const def = LEVELS[index];
-  // grid[y][x]: 0 floor, 1 wall, 2 crate, 3 shadow.
-  const grid = [];
-  for (let y = 0; y < ROWS; y++) {
-    const row = new Array(COLS).fill(0);
-    for (let x = 0; x < COLS; x++) {
-      if (x === 0 || y === 0 || x === COLS - 1 || y === ROWS - 1) row[x] = 1;
-    }
-    grid.push(row);
-  }
-  for (const [x, y, w, h] of def.walls) {
-    for (let yy = y; yy < y + h; yy++) for (let xx = x; xx < x + w; xx++) grid[yy][xx] = 1;
-  }
-  for (const [x, y] of def.crates) grid[y][x] = 2;
-  for (const [x, y, w, h] of def.shadows) {
-    for (let yy = y; yy < y + h; yy++) for (let xx = x; xx < x + w; xx++) grid[yy][xx] = 3;
-  }
-  const tileCenter = ([tx, ty]) => ({ x: tx * 32 + 16, y: ty * 32 + 16 });
-  return {
-    index,
-    name: def.name,
-    subtitle: def.subtitle,
-    grid,
-    objectives: def.objectives.map(tileCenter),
-    exit: tileCenter(def.exit),
-    playerStart: tileCenter(def.player),
-    guards: def.guards.map((g) => ({
-      start: tileCenter(g.start),
-      waypoints: g.waypoints.map(tileCenter),
-      pause: g.pause,
-    })),
-  };
-}
+const tileCenter = ([tx, ty]) => ({ x: tx * TILE + TILE / 2, y: ty * TILE + TILE / 2 });
 
+/** How many levels the archive holds. */
 export function levelCount() {
-  return LEVELS.length;
+  return LEVEL_DEFS.length;
 }
 
-/** The tile at pixel (x, y): 1 wall outside the grid too. */
+/** Whether a map character blocks movement and sight. */
+export function isSolidTile(ch) {
+  return ch === '#' || ch === 'C';
+}
+
+/** The map character at pixel coordinates (x, y); outside the map is wall. */
 export function tileAt(level, x, y) {
-  const tx = Math.floor(x / 32);
-  const ty = Math.floor(y / 32);
-  if (tx < 0 || ty < 0 || tx >= COLS || ty >= ROWS) return 1;
+  const tx = Math.floor(x / TILE);
+  const ty = Math.floor(y / TILE);
+  if (tx < 0 || ty < 0 || ty >= level.grid.length || tx >= level.grid[ty].length) return '#';
   return level.grid[ty][tx];
 }
 
-/** Whether a tile blocks movement and sight. */
-export function isSolidTile(tile) {
-  return tile === 1 || tile === 2;
+/** Build a fresh, mutable level: player start, exit, charts and sentries. */
+export function buildLevel(index) {
+  const def = LEVEL_DEFS[index];
+  const level = { name: def.name, grid: def.grid, playerStart: null, exit: null, objectives: [], guards: [] };
+  for (let ty = 0; ty < def.grid.length; ty++) {
+    for (let tx = 0; tx < def.grid[ty].length; tx++) {
+      const ch = def.grid[ty][tx];
+      const at = tileCenter([tx, ty]);
+      if (ch === 'P') level.playerStart = at;
+      else if (ch === 'E') level.exit = at;
+      else if (ch === '1' || ch === '2' || ch === '3') level.objectives.push({ x: at.x, y: at.y, taken: false });
+    }
+  }
+  level.guards = def.guards.map((g) => ({
+    start: tileCenter(g.start),
+    waypoints: g.waypoints.map(tileCenter),
+  }));
+  return level;
 }
 
-/** Whether pixel (x, y) is inside a shadow patch. */
-export function isShadowAt(level, x, y) {
-  return tileAt(level, x, y) === 3;
+/** Slide a circle through the map: move on each axis only when it stays clear. */
+export function moveCircle(entity, dx, dy, level, radius) {
+  const hitsSolid = (x, y) => {
+    for (const [cx, cy] of [[x - radius, y - radius], [x + radius, y - radius], [x - radius, y + radius], [x + radius, y + radius]]) {
+      if (isSolidTile(tileAt(level, cx, cy))) return true;
+    }
+    return false;
+  };
+  const nx = entity.x + dx;
+  if (!hitsSolid(nx, entity.y)) entity.x = nx;
+  const ny = entity.y + dy;
+  if (!hitsSolid(entity.x, ny)) entity.y = ny;
 }

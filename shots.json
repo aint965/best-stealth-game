@@ -1,1 +1,1 @@
-[{"name":"1-cover.png","query":"?shot=cover&seed=1"},{"name":"2-patrol.png","query":"?shot=patrol&seed=1"},{"name":"3-alert.png","query":"?shot=alert&seed=1"},{"name":"4-exit.png","query":"?shot=exit&seed=1"}]
+[{"name":"1-cover.png","query":"?shot=cover"},{"name":"2-patrol.png","query":"?shot=patrol"},{"name":"3-alert.png","query":"?shot=alert"},{"name":"4-exit.png","query":"?shot=exit"}]

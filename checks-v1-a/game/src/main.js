@@ -1,146 +1,165 @@
-// Quiet Vault: boot and the one loop. Input is read every frame, the world
-// advances in fixed 1/60 s steps (several in a slow frame, none in a fast
-// one), and the renderer paints what is there. The game moves between six
-// screens: title, play, paused, caught, level clear and win.
-//
-// ?shot=cover|patrol|alert|exit (with &seed=N, ignored: the scenes are
-// posed, not random) stages that scene instead of running the loop, paints
-// it twice and sets window.__shotReady for a screenshot.
-//
-// window.__game is the play-test handle: the current world and screen, so a
-// headless driver can move the player, watch suspicion and confirm the win.
-import { ACTION_CLICK, ACTION_CONFIRM, ACTION_MUTE, ACTION_PAUSE, ACTION_RETRY, createInput } from './input.js';
-import { EVENT_ALERT, EVENT_CAUGHT, EVENT_EXIT_OPEN, EVENT_LEVEL_CLEAR, EVENT_PICKUP, EVENT_WIN, createGame, nextLevel, stepWorld } from './game.js';
-import { createAudio } from './audio.js';
-import { createRenderer, SCREEN_CAUGHT, SCREEN_LEVEL_CLEAR, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_TITLE, SCREEN_WIN } from './render.js';
-import { stageShot } from './shots.js';
-
-/** The simulation's fixed step, in seconds: 60 updates a second. */
-const STEP = 1 / 60;
-/** The longest frame the loop catches up on; a longer stall is dropped. */
-const MAX_FRAME = 0.25;
-
-const params = new URLSearchParams(window.location.search);
-const shot = params.get('shot');
+// Starlight Archive — the game loop and its screens.
+// Title, play, pause, caught, level-clear and win. The world is exposed
+// on window.__game so the game can be driven and inspected from outside:
+// screen, world (level, player, guards, objectives, exitOpen) and timer.
+import { VIEW_W, VIEW_H, WIN_RADIUS, LURE_RADIUS, LURE_COOLDOWN } from './config.js';
+import { buildLevel, levelCount } from './level.js';
+import { makeGuard, updateGuard, lureGuards } from './guards.js';
+import { makePlayer, updatePlayer } from './player.js';
+import { makeInput } from './input.js';
+import { SoundBank } from './audio.js';
+import { draw } from './render.js';
+import { applyShot } from './shots.js';
 
 const canvas = document.getElementById('game');
-const status = document.getElementById('status');
-const renderer = createRenderer(canvas);
+const ctx = canvas.getContext('2d');
+const sound = new SoundBank();
 
-// One session object, mutated in place, so window.__game always points at
-// the world being played.
-const session = { world: createGame(0), screen: SCREEN_TITLE };
-window.__game = session;
+const game = {
+  screen: 'title', // title | play | paused | caught | level-clear | win
+  levelIndex: 0,
+  world: null,
+  time: 0,
+  timer: 0,
+  muted: false,
+  frozen: false,
+  lureCooldown: 0,
+};
+window.__game = game;
 
-function announce(message) {
-  status.textContent = message;
+function loadLevel(index) {
+  const level = buildLevel(index);
+  game.levelIndex = index;
+  game.world = {
+    level,
+    player: makePlayer(level.playerStart),
+    guards: level.guards.map(makeGuard),
+    objectives: level.objectives,
+    exitOpen: false,
+    caught: false,
+    lure: null,
+    onFootstep: (sneaking) => sound.footstep(sneaking),
+    onPickup: () => sound.pickup(),
+    onDoorOpen: () => sound.doorOpen(),
+    onAlarm: () => sound.alertSting(),
+  };
 }
 
-function runShot(name) {
-  const scene = stageShot(name);
-  session.world = scene.world;
-  session.screen = scene.screen;
-  let painted = 0;
-  function paint() {
-    renderer.draw(session.world, session.screen);
-    painted += 1;
-    if (painted < 2) requestAnimationFrame(paint);
-    else window.__shotReady = true;
-  }
-  requestAnimationFrame(paint);
+function startLevel(index) {
+  loadLevel(index);
+  game.screen = 'play';
+  game.timer = index === 0 ? 0 : game.timer;
 }
 
-function runGame() {
-  const input = createInput(canvas);
-  const audio = createAudio();
-  session.world.audio = audio;
-  let accumulator = 0;
-  let last = performance.now();
-
-  function startLevel(index) {
-    session.world = createGame(index);
-    session.world.audio = audio;
-    session.screen = SCREEN_PLAY;
-    accumulator = 0;
-    announce(`Level ${index + 1}. Find the three seed-cases, then leave unseen.`);
+function throwLure(x, y) {
+  if (game.screen !== 'play' || game.lureCooldown > 0) return;
+  if (lureGuards(game.world.guards, x, y, LURE_RADIUS)) {
+    game.world.lure = { x, y, t: 1.2 };
+    game.lureCooldown = LURE_COOLDOWN;
+    sound.lureClink();
   }
+}
 
-  function handleActions() {
-    const actions = input.takeScreenActions();
-    if (actions === 0) return;
-    audio.unlock();
-    if (actions & ACTION_MUTE) {
-      const muted = audio.toggleMute();
-      announce(muted ? 'Muted.' : 'Sound on.');
-    }
-    if (session.screen === SCREEN_TITLE && (actions & (ACTION_CONFIRM | ACTION_CLICK))) {
-      startLevel(0);
-    } else if (session.screen === SCREEN_PLAY && (actions & ACTION_PAUSE)) {
-      session.screen = SCREEN_PAUSED;
-      announce('Paused.');
-    } else if (session.screen === SCREEN_PAUSED && (actions & (ACTION_PAUSE | ACTION_CONFIRM))) {
-      session.screen = SCREEN_PLAY;
-      announce('Playing.');
-    } else if (session.screen === SCREEN_CAUGHT && (actions & ACTION_RETRY)) {
-      startLevel(session.world.levelIndex);
-    } else if (session.screen === SCREEN_LEVEL_CLEAR && (actions & ACTION_CONFIRM)) {
-      startLevel(session.world.levelIndex + 1);
-    } else if (session.screen === SCREEN_WIN && (actions & ACTION_CONFIRM)) {
+const input = makeInput(canvas, (x, y) => {
+  sound.resume();
+  if (game.screen === 'title') startLevel(0);
+  else if (game.screen === 'level-clear') startLevel(game.levelIndex + 1);
+  else if (game.screen === 'play') throwLure(x, y);
+});
+
+function update(dt) {
+  game.time += dt;
+  if (input.consume('mute')) {
+    game.muted = !game.muted;
+    sound.muted = game.muted;
+  }
+  if (game.screen === 'title') {
+    if (input.consume('confirm')) {
+      sound.resume();
       startLevel(0);
     }
+    input.clearPressed();
+    return;
   }
-
-  function step() {
-    const events = stepWorld(session.world, input, STEP);
-    if (events & EVENT_CAUGHT) {
-      session.screen = SCREEN_CAUGHT;
-      announce('Caught! Press R to retry the level.');
-    } else if (events & EVENT_WIN) {
-      session.screen = SCREEN_WIN;
-      announce('All vaults cleared.');
-    } else if (events & EVENT_LEVEL_CLEAR) {
-      const cleared = session.world;
-      session.world = nextLevel(cleared);
-      session.world.audio = audio;
-      session.screen = SCREEN_LEVEL_CLEAR;
-      announce('Level clear. Press Enter for the next vault.');
-    } else if (events & EVENT_PICKUP) {
-      const got = session.world.objectives.filter((o) => o.taken).length;
-      announce(`Seed-case ${got} of 3.`);
-    } else if (events & EVENT_EXIT_OPEN) {
-      announce('The service door is open. Leave unseen.');
-    } else if (events & EVENT_ALERT) {
-      announce('Alarm! Break line of sight and hide.');
+  if (game.screen === 'caught') {
+    if (input.consume('retry')) {
+      sound.resume();
+      startLevel(game.levelIndex);
     }
+    input.clearPressed();
+    return;
+  }
+  if (game.screen === 'level-clear') {
+    if (input.consume('confirm')) {
+      sound.resume();
+      startLevel(game.levelIndex + 1);
+    }
+    input.clearPressed();
+    return;
+  }
+  if (game.screen === 'win') {
+    if (input.consume('confirm')) {
+      game.screen = 'title';
+      game.world = null;
+    }
+    input.clearPressed();
+    return;
+  }
+  if (game.screen === 'paused') {
+    if (input.consume('pause')) game.screen = 'play';
+    input.clearPressed();
+    return;
   }
 
-  function frame(now) {
-    requestAnimationFrame(frame);
-    accumulator += Math.min((now - last) / 1000, MAX_FRAME);
-    last = now;
-    handleActions();
-    if (session.screen === SCREEN_PLAY) {
-      while (accumulator >= STEP && session.screen === SCREEN_PLAY) {
-        step();
-        accumulator -= STEP;
-      }
+  // Playing.
+  if (input.consume('pause')) {
+    game.screen = 'paused';
+    input.clearPressed();
+    return;
+  }
+  input.sync();
+  game.timer += dt;
+  game.lureCooldown = Math.max(0, game.lureCooldown - dt);
+  if (game.world.lure) {
+    game.world.lure.t -= dt;
+    if (game.world.lure.t <= 0) game.world.lure = null;
+  }
+  updatePlayer(game.world.player, dt, input, game.world);
+  for (const guard of game.world.guards) updateGuard(guard, dt, game.world);
+  input.clearPressed();
+
+  if (game.world.caught) {
+    game.screen = 'caught';
+    sound.loseJingle();
+    return;
+  }
+  const { player, level } = game.world;
+  if (game.world.exitOpen && Math.hypot(player.x - level.exit.x, player.y - level.exit.y) < WIN_RADIUS) {
+    if (game.levelIndex + 1 >= levelCount()) {
+      game.screen = 'win';
     } else {
-      accumulator = 0;
+      game.screen = 'level-clear';
     }
-    renderer.draw(session.world, session.screen);
+    sound.winJingle();
   }
+}
 
-  // Leaving the tab pauses a running game rather than letting wardens walk unseen.
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden && session.screen === SCREEN_PLAY) {
-      session.screen = SCREEN_PAUSED;
-      announce('Paused.');
-    }
-  });
-
-  announce('Quiet Vault. Press Enter or click to start.');
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000);
+  last = now;
+  if (!game.frozen) update(dt);
+  draw(ctx, game);
   requestAnimationFrame(frame);
 }
 
-if (shot) runShot(shot);
-else runGame();
+// A ?shot= name stages a screenshot scene and freezes the simulation.
+const shotName = new URLSearchParams(location.search).get('shot');
+if (shotName) {
+  loadLevel(0);
+  applyShot(game, shotName, loadLevel);
+} else {
+  loadLevel(0);
+  game.screen = 'title';
+}
+requestAnimationFrame(frame);

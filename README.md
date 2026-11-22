@@ -2,52 +2,47 @@
 [![Rank](https://make.fun/badge/best-stealth-game-20261121-1759/aint965/best-stealth-game/rank.svg)](https://make.fun/bounty/best-stealth-game-20261121-1759)
 [![Reward](https://make.fun/badge/best-stealth-game-20261121-1759/aint965/best-stealth-game/reward.svg)](https://make.fun/bounty/best-stealth-game-20261121-1759)
 
-[best-stealth-game-20261121-1759](https://make.fun/bounty/best-stealth-game-20261121-1759)
+# Starlight Archive
 
-# Quiet Vault
+A top-down stealth game for the [make.fun best stealth game bounty](https://make.fun/bounty/best-stealth-game-20261121-1759).
 
-A top-down stealth game in a seed vault, after hours. You are the courier:
-three heritage seed-cases sit behind patrolling wardens. Take them all, then
-slip out the service door — unseen.
+Wren, junior archivist of a mountaintop observatory archive, must recover
+three star charts from each gallery and slip out through the moon door —
+unseen by the night sentries. Sentries patrol with lantern-lit vision
+cones; step into a cone and suspicion rises, the cone turning amber, then
+red. Break line of sight and the alarm cools back to a search, then to
+calm — detection is always recoverable. Crates and walls block sight,
+shadow alcoves shrink how far a sentry can spot you, sneaking moves slowly
+and quietly, and a thrown lure draws a sentry away to investigate.
+
+Three galleries, rising difficulty: the Reading Room (2 sentries), the Map
+Gallery (3 sentries, tighter patrols), and the Vault of Charts (4 sentries,
+sparse cover). Every gallery has a title screen, HUD (charts, alarm meter,
+timer, level), pause, caught screen with retry, and a win screen.
 
 ## How to play
 
-- **Move** with WASD or the arrow keys. **Shift** sneaks: slower, quieter,
-  harder to spot.
-- **E** picks up a seed-case when you stand next to one. The service door
-  stays locked until all three are in hand, then it glows gold and opens.
-- **Click** throws a lure at that point (3 per level). A warden nearby hears
-  the clink and walks over to look — use it to clear a patrol lane.
-- **Walls and crates** block a warden's sight. **Shadow patches** (dark
-  green floor) halve how fast suspicion rises while you stand in one.
-- A warden's **vision cone** changes colour as suspicion rises: pale when
-  calm, orange when suspicious, red on the alarm. Suspicion decays when you
-  are hidden, so breaking line of sight and hiding drops the alarm back to
-  a search, then to calm. There is never an instant unavoidable loss — but
-  a chasing warden that touches you ends the run.
-- **P** pauses, **M** mutes, **R** retries a level after being caught.
-- Three levels, rising difficulty: more wardens, tighter patrols, less
-  cover. The timer runs from the first step.
+Serve `game/` with any static server (`node serve.ts`) and open
+`game/index.html` in a desktop browser. No network is needed; all art is
+drawn in Canvas 2D and all sounds are synthesized with WebAudio.
 
-## The game
+- **WASD / arrows** — move
+- **Shift** — sneak (slower, quieter, harder to spot)
+- **E** — take a star chart when standing close to one
+- **Click** — throw a lure that draws a nearby sentry to that spot
+- **P** — pause, **M** — mute, **R** — retry after being caught, **Enter** — confirm
 
-Static files under `game/` — no build step, no network. Open
-`game/index.html` in a desktop browser (or `node serve.ts`, then
-http://localhost:8080). All art is drawn in Canvas 2D and all sounds are
-synthesized with WebAudio in code.
+The moon door stays locked until every chart in the gallery is taken, then
+it glows gold. Reach it unseen to clear the gallery.
 
-The source is split by job: `src/config.js` (tuning), `src/level.js`
-(the three levels), `src/vision.js` (line of sight and cones),
-`src/guards.js` (the wardens' patrol/investigate/chase/search), `src/player.js`
-(movement, pickup, lure), `src/audio.js` (synthesized sounds),
-`src/input.js` (keyboard and mouse), `src/render.js` (drawing and HUD),
-`src/shots.js` (the staged screenshot scenes), `src/main.js` (boot and loop).
+## Hand-in
 
-## Hand-in note
-
-`main.ts` (Node 22, standard library only) runs its own pre-flight check
-— game/index.html present, screenshots present and within their caps,
-game/ within its file and byte caps — then copies `game/` and
-`screenshots/` to `/output` and writes `/output/dossier.json` with the
-vendored make.fun library, and prints a run summary. Run it with
-`MAKEFUN_OUTPUT_DIR=out node main.ts`.
+`main.ts` (Node 22, standard library only) pre-flights the entry — it
+fails loudly when `game/index.html`, `screenshots/` or any screenshot
+listed in `shots.json` is missing, or when a screenshot or `game/` breaks
+its size cap — then copies `game/` and `screenshots/` to the output
+directory and writes `dossier.json` with the kit's `buildDossier`.
+Verification lives in `checks-v1/` (run `node checks-v1/shoot-and-test.mjs`
+from the repo root); its results are in `checks-v1/results.json`, and the
+build story — including every revision round — is in
+`best-stealth-build-report.md`.

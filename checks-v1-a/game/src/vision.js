@@ -1,17 +1,25 @@
-// Quiet Vault: what a guard can see. Line of sight is sampled along the
-// segment in short steps; a wall or a crate anywhere on it blocks the view.
-// A cone check is range, then angle, then line of sight, in that order,
-// so the common miss (too far) costs almost nothing.
-import { GUARD_VISION_HALF_ANGLE, GUARD_VISION_RANGE } from './config.js';
+// Starlight Archive — what a sentry can see.
+// A sentry sees the archivist when three things are true: the archivist is
+// inside the cone's range, inside its angle, and in line of sight (no wall
+// or crate between them). Sneaking and standing in a shadow alcove both
+// shrink the range, so cover and darkness are real tools, not decoration.
+import { CONE_RANGE, CONE_HALF_ANGLE, SNEAK_RANGE_FACTOR, SHADOW_RANGE_FACTOR } from './config.js';
 import { isSolidTile, tileAt } from './level.js';
 
-/** Whether the straight segment from (x0, y0) to (x1, y1) crosses no solid tile. */
-export function losClear(level, x0, y0, x1, y1) {
+/** How far a sentry can spot the archivist right now. */
+export function detectionRange(player) {
+  let range = CONE_RANGE;
+  if (player.sneaking) range *= SNEAK_RANGE_FACTOR;
+  if (player.inShadow) range *= SHADOW_RANGE_FACTOR;
+  return range;
+}
+
+/** Whether any wall or crate stands between two points. */
+export function hasLineOfSight(level, x0, y0, x1, y1) {
   const dx = x1 - x0;
   const dy = y1 - y0;
   const dist = Math.hypot(dx, dy);
-  if (dist === 0) return true;
-  const steps = Math.ceil(dist / 8);
+  const steps = Math.max(1, Math.ceil(dist / 6));
   for (let i = 1; i < steps; i++) {
     const t = i / steps;
     if (isSolidTile(tileAt(level, x0 + dx * t, y0 + dy * t))) return false;
@@ -19,19 +27,17 @@ export function losClear(level, x0, y0, x1, y1) {
   return true;
 }
 
-/**
- * Whether a guard at (gx, gy) facing `angle` can see a point (px, py):
- * inside the vision range, inside the cone's half-angle, with line of sight.
- */
-export function canSee(level, gx, gy, angle, px, py, range = GUARD_VISION_RANGE) {
-  const dx = px - gx;
-  const dy = py - gy;
+/** Whether this sentry can currently see the archivist. */
+export function canSee(guard, player, level) {
+  const dx = player.x - guard.x;
+  const dy = player.y - guard.y;
   const dist = Math.hypot(dx, dy);
-  if (dist > range) return false;
-  if (dist < 1) return true;
-  let diff = Math.atan2(dy, dx) - angle;
-  while (diff > Math.PI) diff -= 2 * Math.PI;
-  while (diff < -Math.PI) diff += 2 * Math.PI;
-  if (Math.abs(diff) > GUARD_VISION_HALF_ANGLE) return false;
-  return losClear(level, gx, gy, px, py);
+  if (dist > detectionRange(player)) return false;
+  if (dist > 4) {
+    let diff = Math.atan2(dy, dx) - guard.angle;
+    while (diff > Math.PI) diff -= Math.PI * 2;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    if (Math.abs(diff) > CONE_HALF_ANGLE) return false;
+  }
+  return hasLineOfSight(level, guard.x, guard.y, player.x, player.y);
 }

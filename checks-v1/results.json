@@ -10,19 +10,19 @@
     },
     "screenshot-1-cover.png": {
       "pass": true,
-      "detail": "800x608, 25539 bytes"
+      "detail": "800x608, 33407 bytes"
     },
     "screenshot-2-patrol.png": {
       "pass": true,
-      "detail": "800x608, 27873 bytes"
+      "detail": "800x608, 35622 bytes"
     },
     "screenshot-3-alert.png": {
       "pass": true,
-      "detail": "800x608, 27250 bytes"
+      "detail": "800x608, 32906 bytes"
     },
     "screenshot-4-exit.png": {
       "pass": true,
-      "detail": "800x608, 29577 bytes"
+      "detail": "800x608, 39796 bytes"
     },
     "play-title-screen": {
       "pass": true,
@@ -34,11 +34,11 @@
     },
     "play-movement": {
       "pass": true,
-      "detail": "x 80 -> 228"
+      "detail": "x 48 -> 193"
     },
     "play-vision-reacts": {
       "pass": true,
-      "detail": "suspicion 0.0 -> 10.3"
+      "detail": "suspicion 1.2 -> 100.0"
     },
     "play-caught": {
       "pass": true,
@@ -62,11 +62,11 @@
     },
     "main-ts-run-a": {
       "pass": true,
-      "detail": "quiet-vault hand-in: game 12 files (48025 bytes), screenshots 4 (110239 bytes), dossier 197937 bytes -> /home/hatch/workspace/makefun/entries/best-stealth-game-xingchi/checks-v1-a"
+      "detail": "hand-in complete: 12 game entries (39557 bytes), 4 screenshots (1-cover.png, 2-patrol.png, 3-alert.png, 4-exit.png), dossier.json 231225 bytes"
     },
     "main-ts-run-b": {
       "pass": true,
-      "detail": "quiet-vault hand-in: game 12 files (48025 bytes), screenshots 4 (110239 bytes), dossier 197937 bytes -> /home/hatch/workspace/makefun/entries/best-stealth-game-xingchi/checks-v1-b"
+      "detail": "hand-in complete: 12 game entries (39557 bytes), 4 screenshots (1-cover.png, 2-patrol.png, 3-alert.png, 4-exit.png), dossier.json 231225 bytes"
     },
     "main-ts-deterministic": {
       "pass": true,
@@ -80,25 +80,25 @@
   "screenshots": [
     {
       "name": "1-cover.png",
-      "bytes": 25539,
+      "bytes": 33407,
       "width": 800,
       "height": 608
     },
     {
       "name": "2-patrol.png",
-      "bytes": 27873,
+      "bytes": 35622,
       "width": 800,
       "height": 608
     },
     {
       "name": "3-alert.png",
-      "bytes": 27250,
+      "bytes": 32906,
       "width": 800,
       "height": 608
     },
     {
       "name": "4-exit.png",
-      "bytes": 29577,
+      "bytes": 39796,
       "width": 800,
       "height": 608
     }
